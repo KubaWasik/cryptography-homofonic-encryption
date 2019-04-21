@@ -1,13 +1,12 @@
 #pragma once
 #include <iostream>
-#include <cstdio>
 #include <string>
 #include <map>
 #include <vector>
 #include <ctime>
 #include <random>
 #include <sstream>
-#include <algorithm>
+#include <locale>
 
 using namespace std;
 
@@ -29,10 +28,11 @@ private:
 	random_device rd;
 	typedef mt19937 MyRng;
 	MyRng rng;
+	locale locale_pl;
 public:
-	Homophone(string);
+	Homophone(string, bool use_polish_frequency_table = true);
 	friend ostream & operator << (ostream &, Homophone const &);
-	bool is_in_table(int);
+	bool not_in_table(int);
 	string encrypt(string);
 	string decrypt(string);
 	bool is_number(const string &s);

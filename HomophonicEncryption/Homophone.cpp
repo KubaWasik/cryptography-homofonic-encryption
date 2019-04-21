@@ -1,37 +1,60 @@
 #include "pch.h"
 #include "Homophone.h"
 
-Homophone::Homophone(string text)
+Homophone::Homophone(string text, bool use_polish_frequency_table)
 	: rng(rd())
 {
+	locale_pl = locale("pl_PL.UTF8");
 	rng.seed(::time(NULL));
 	for (int i = 0; i < text.length(); i++)
 	{
-		frequency[text[i]] += 1;
-	}
-	for (const auto &it : frequency)
-	{
-		if (frequency[it.first] > 0)
+		if (isalpha(text[i], locale_pl))
 		{
-			while (homophones[it.first].size() < frequency[it.first])
+			number_of_occurrences[text[i]] += 1;
+		}
+	}
+
+	if (use_polish_frequency_table)
+	{
+		for (const auto &it : number_of_occurrences)
+		{
+			if (frequency[it.first] > 0)
 			{
-				int number = random_int(10, 226);
-				if (is_in_table(number))
+				while (homophones[it.first].size() < frequency[it.first])
 				{
-					homophones[it.first].push_back(number);
+					int number = random_int(10, 226);
+					if (not_in_table(number))
+					{
+						homophones[it.first].push_back(number);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (const auto &it : number_of_occurrences)
+		{
+			if (frequency[it.first] > 0)
+			{
+				while (homophones[it.first].size() < number_of_occurrences[it.first])
+				{
+					int number = random_int(10, text.length() + 10);
+					if (not_in_table(number))
+					{
+						homophones[it.first].push_back(number);
+					}
 				}
 			}
 		}
 	}
 }
 
-bool Homophone::is_in_table(int number)
+bool Homophone::not_in_table(int number)
 {
-	for (const auto &it : homophones)
-	{
+	for (const auto &it : homophones) {
 		auto at = find(homophones[it.first].begin(), homophones[it.first].end(), number);
-		if (distance(homophones[it.first].begin(), at) != homophones[it.first].size())
-		{
+		if (distance(homophones[it.first].begin(), at) != homophones[it.first].size()) {
 			return false;
 		}
 	}
@@ -73,7 +96,7 @@ string Homophone::decrypt(string cipher)
 	int number;
 	while (getline(iss, s, ' '))
 	{
-		if (is_number(s.c_str()))
+		if (!isalpha(s.c_str(), locale_pl))
 		{
 			number = atoi(s.c_str());
 			if (number >= 10)
